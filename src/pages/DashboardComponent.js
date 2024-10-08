@@ -23,9 +23,7 @@ const DashboardComponent = () => {
         Logout
       </button>
 
-      {username && (
-        <h1 style={styles.greeting}>Hey {username}, welcome back!</h1>
-      )}
+      {username && <h1 style={styles.greeting}>Welcome {username}!</h1>}
 
       <iframe
         title="Outward Hound"
