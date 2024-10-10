@@ -30,6 +30,9 @@ const AuthComponent = () => {
       setIsRegistering(false);
       // Switch back to login after registration
     } catch (error) {
+      alert(error.response.data);
+      setIsloading(false);
+
       console.error("Registration error", error);
     }
   };
@@ -51,6 +54,8 @@ const AuthComponent = () => {
       setIsloading(false);
       navigate("/dashboard"); // Redirect to the dashboard
     } catch (error) {
+      alert(error.response.data);
+      setIsloading(false);
       console.error("Login error", error);
     }
   };
@@ -71,6 +76,7 @@ const AuthComponent = () => {
         navigate("/dashboard"); // Redirect after successful Google login
       })
       .catch((error) => {
+        debugger;
         console.error("Google login error", error);
       });
   };

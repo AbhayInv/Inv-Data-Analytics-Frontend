@@ -1,16 +1,32 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import axiosInstance from "../axiosInstance";
 
 const DashboardComponent = () => {
   const navigate = useNavigate();
   const store = useAuthStore();
   const username = store.userName;
+  const [lookerLink, setLookerLink] = useState("");
+  const [additionalLookerLink, setAdditionalLookerLink] = useState(null);
 
-  // Logout function: clears localStorage and redirects to the login page
+  useEffect(() => {
+    const fetchLookerLink = async () => {
+      try {
+        const response = await axiosInstance.get(`/auth/user-link/${username}`);
+        setLookerLink(response.data.lookerLink);
+        if (response.data.additionalLookerLink) {
+          setAdditionalLookerLink(response.data.additionalLookerLink);
+        }
+      } catch (error) {
+        console.error("Error fetching Looker link:", error);
+      }
+    };
+
+    fetchLookerLink();
+  }, [username]);
 
   const handleLogout = () => {
-    // localStorage.clear(); // Clear all stored data
     store.addToken("");
     store.addUser("");
     navigate("/"); // Redirect to login page
@@ -18,22 +34,37 @@ const DashboardComponent = () => {
 
   return (
     <div style={styles.container}>
-      {/* Logout Button */}
       <button onClick={handleLogout} style={styles.logoutButton}>
         Logout
       </button>
 
       {username && <h1 style={styles.greeting}>Welcome {username}!</h1>}
 
-      <iframe
-        title="Outward Hound"
-        width="800"
-        height="650"
-        src="https://lookerstudio.google.com/embed/reporting/30c4671b-07c7-42dc-8aae-f35fb4dbf62b/page/p_xhxvhkcljd"
-        frameborder="0"
-        allowFullScreen
-        sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-      ></iframe>
+      {lookerLink ? (
+        <iframe
+          title="Looker Table"
+          width="800"
+          height="650"
+          src={lookerLink}
+          frameborder="0"
+          allowFullScreen
+          sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+        ></iframe>
+      ) : (
+        <p>No data found! Please contact administrator for more details.</p>
+      )}
+
+      {additionalLookerLink && (
+        <div style={styles.sidebar}>
+          <a
+            href={additionalLookerLink}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View Additional Report
+          </a>
+        </div>
+      )}
     </div>
   );
 };
@@ -65,11 +96,13 @@ const styles = {
     color: "#6a1b9a",
     marginBottom: "20px",
   },
-  iframe: {
-    width: "80%",
-    height: "500px",
-    border: "none",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+  sidebar: {
+    position: "absolute",
+    top: "100px",
+    left: "20px",
+    backgroundColor: "#e0e0e0",
+    padding: "10px",
+    borderRadius: "5px",
   },
 };
 
